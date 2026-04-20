@@ -11,8 +11,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${PROD_USER}@${PROD_SERVER_IP}:/home/${PROD_USER}/"
-                    sh "ssh -o StrictHostKeyChecking=no ${PROD_USER}@${PROD_SERVER_IP} 'sudo docker-compose up -d --build'"
+                 sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@3.88.129.0:/home/ubuntu/"
+sh "ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 'docker-compose up -d --build'"
                 }
             }
         }
