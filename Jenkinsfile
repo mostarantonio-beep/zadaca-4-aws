@@ -27,12 +27,12 @@ pipeline {
             steps {
                 script {
                     // 1. Šaljemo tvoj index.html na produkcijsku instancu
-                    sh "scp -o StrictHostKeyChecking=no index.html ubuntu@3.88.129.0:/home/ubuntu/"
+                    sh "scp -o StrictHostKeyChecking=no index.html ubuntu@34.203.194.188:/home/ubuntu/"
                     
                     // 2. Brišemo stari kontejner ako postoji i pokrećemo novi čisti Nginx
                     // Koristimo tvoj index.html koji smo upravo poslali
                     sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 '
+                        ssh -o StrictHostKeyChecking=no ubuntu@34.203.194.188 '
                         docker rm -f web-server || true
                         docker run -d --name web-server -p 80:80 -v /home/ubuntu/index.html:/usr/share/nginx/html/index.html nginx:alpine
                         '
