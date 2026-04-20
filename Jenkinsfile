@@ -23,22 +23,18 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                script {
-                    // 1. Šaljemo tvoj index.html na produkcijsku instancu
-                    sh "scp -o StrictHostKeyChecking=no index.html ubuntu@34.203.194.188:/home/ubuntu/"
-                    
-                    // 2. Brišemo stari kontejner ako postoji i pokrećemo novi čisti Nginx
-                    // Koristimo tvoj index.html koji smo upravo poslali
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@34.203.194.188 '
-                        docker rm -f web-server || true
-                        docker run -d --name web-server -p 80:80 -v /home/ubuntu/index.html:/usr/share/nginx/html/index.html nginx:alpine
-                        '
-                    """
-                }
-            }
+      stage('Deploy') {
+    steps {
+        script {
+            // 1. Kopiramo index.html direktno u home mapu (bez scp-a)
+            sh "cp index.html /home/ubuntu/"
+
+            // 2. Brišemo stari kontejner ako postoji i pokrećemo novi
+            // Koristimo direktne docker naredbe jer smo već na localhostu
+            sh """
+                docker rm -f web-server || true
+                docker run -d --name web-server -p 80:80 -v /home/ubuntu/index.html:/usr/share/nginx/html/index.html nginx:alpine
+            """
         }
     }
 }
