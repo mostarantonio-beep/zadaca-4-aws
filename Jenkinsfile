@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                  sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@3.88.129.0:/home/ubuntu/"
-sh "ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 'docker-compose up -d --build'"
+sh "ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 'docker-compose up -d'"
                 }
             }
         }
