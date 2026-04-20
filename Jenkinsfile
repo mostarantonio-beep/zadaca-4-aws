@@ -18,7 +18,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Provjera ispravnosti Nginx konfiguracije unutar slike
+                // Provjera ispravnosti Nginx konfiguracije
                 sh 'docker run --rm antonio-coric-web nginx -t'
             }
         }
@@ -26,11 +26,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // 1. Kopiramo index.html u /tmp/ (tu Jenkins ima dozvolu pisanja)
+                    // 1. Kopiramo u /tmp/ jer tu svatko ima dozvolu pisanja (ne treba sudo)
                     sh "cp index.html /tmp/index.html"
                     
-                    // 2. Čistimo stari kontejner i pokrećemo novi
-                    // Montiramo datoteku direktno iz /tmp/ mape
+                    // 2. Gasimo stari kontejner ako postoji i pokrećemo novi
+                    // Montiramo datoteku direktno iz /tmp/ mape u Docker
                     sh """
                         docker rm -f web-server || true
                         docker run -d --name web-server -p 80:80 -v /tmp/index.html:/usr/share/nginx/html/index.html nginx:alpine
