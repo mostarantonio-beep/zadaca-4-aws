@@ -1,18 +1,42 @@
 pipeline {
     agent any
-    environment {
-        PROD_SERVER_IP = "OVDJE_CES_STAVITI_IP_DRUGE_INSTANCE"
-        PROD_USER = "ubuntu"
-    }
+
     stages {
-        stage('Checkout') { steps { checkout scm } }
-        stage('Build') { steps { sh 'docker-compose build' } }
-        stage('Test') { steps { sh 'docker run --rm antonio-coric-web:latest nginx -t' } }
+        stage('Checkout') {
+            steps {
+                // Uzima najnoviji kod s GitHub-a
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Buildamo Docker sliku na Jenkins serveru
+                sh 'docker build -t antonio-coric-web .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Provjera je li Nginx konfiguracija unutar slike ispravna
+                sh 'docker run --rm antonio-coric-web nginx -t'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 script {
-                 sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@3.88.129.0:/home/ubuntu/"
-sh "ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 'docker-compose up -d'"
+                    // 1. Šaljemo tvoj index.html na produkcijsku instancu
+                    sh "scp -o StrictHostKeyChecking=no index.html ubuntu@3.88.129.0:/home/ubuntu/"
+                    
+                    // 2. Brišemo stari kontejner ako postoji i pokrećemo novi čisti Nginx
+                    // Koristimo tvoj index.html koji smo upravo poslali
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ubuntu@3.88.129.0 '
+                        docker rm -f web-server || true
+                        docker run -d --name web-server -p 80:80 -v /home/ubuntu/index.html:/usr/share/nginx/html/index.html nginx:alpine
+                        '
+                    """
                 }
             }
         }
