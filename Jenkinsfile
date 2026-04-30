@@ -23,10 +23,19 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh "cp index.html /tmp/index.html"
+                    def remoteIP = '98.94.100.200'
+                    def remoteUser = 'ubuntu'
+
+                    // Slanje datoteka na produkcijsku instancu
+                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml index.html ${remoteUser}@${remoteIP}:/home/ubuntu/app/"
+
+                    // Pokretanje na produkciji putem Docker Compose
                     sh """
-                        docker rm -f web-server || true
-                        docker run -d --name web-server -p 80:80 -v /tmp/index.html:/usr/share/nginx/html/index.html nginx:alpine
+                        ssh -o StrictHostKeyChecking=no ${remoteUser}@${remoteIP} "
+                            cd /home/ubuntu/app
+                            docker-compose down || true
+                            docker-compose up -d
+                        "
                     """
                 }
             }
